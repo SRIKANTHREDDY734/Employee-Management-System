@@ -1,0 +1,170 @@
+WINAIM  - Backend Database Programming Assignments
+
+SQL Assessment
+
+### Exercise 1: Employee Management System
+
+**Objective**: To test the ability to design relational databases, write complex SQL queries, and handle data relationships.
+
+#### Requirements:
+
+1. **Database Schema Design**:
+   - Create tables for `employees`, `departments`, and `salaries`.
+   - `employees` table should include: `employee_id`, `first_name`, `last_name`, `department_id`, `hire_date`.
+   - `departments` table should include: `department_id`, `department_name`.
+   - `salaries` table should include: `employee_id`, `salary`, `from_date`, `to_date`.
+
+2. **SQL Queries**:
+   - Write a query to find all employees who have been hired in the last year.
+   - Write a query to calculate the total salary expenditure for each department.
+   - Write a query to find the top 5 highest-paid employees along with their department names.
+
+
+
+
+
+>>>>>>>>>>>>>**Database Schema Design**:
+
+-- Create tables for `employees`, `departments`, and `salaries`.
+ 
+
+
+[-- `departments` table should include: `department_id`, `department_name`.]
+
+
+
+CREATE TABLE departments (
+  department_id INT AUTO_INCREMENT,
+  department_name VARCHAR(100) NOT NULL,
+  PRIMARY KEY (department_id)
+);
+INSERT INTO departments (department_name) VALUES 
+('Sales'), 
+('Marketing'), 
+('IT'), 
+('HR'), 
+('Finance');
+
+
+
+[-- `employees` table should include: `employee_id`, `first_name`, `last_name`, `department_id`, `hire_date`.]
+
+
+
+CREATE TABLE employees (
+  employee_id INT AUTO_INCREMENT,
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  department_id INT,
+  hire_date DATE,
+  PRIMARY KEY (employee_id),
+  FOREIGN KEY (department_id) REFERENCES departments(department_id)
+);
+INSERT INTO employees (first_name, last_name, department_id, hire_date) VALUES 
+('John', 'Doe', 1, '2022-01-01'), 
+('Jane', 'Smith', 2, '2023-06-01'), 
+('Bob', 'Johnson', 3, '2022-03-01'), 
+('Alice', 'Williams', 4, '2024-08-01'), 
+('Mike', 'Davis', 5, '2023-02-01');
+
+
+
+
+[-- `salaries` table should include: `employee_id`, `salary`, `from_date`, `to_date`.]
+
+
+
+CREATE TABLE salaries (
+  employee_id INT,
+  salary DECIMAL(10, 2),
+  from_date DATE,
+  to_date DATE,
+  FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+);
+INSERT INTO salaries (employee_id, salary, from_date, to_date) VALUES 
+(1, 50000, '2022-01-01', '2023-12-31'), 
+(2, 60000, '2023-06-01', '2024-12-31'), 
+(3, 70000, '2022-03-01', '2023-12-31'), 
+(4, 40000, '2024-08-01', '2024-12-31'), 
+(5, 80000, '2023-02-01', '2024-12-31');
+
+
+
+
+>>>>>>>>>>>>>>>>>**SQL Queries**:
+
+
+
+[-- Write a query to find all employees who have been hired in the last year.]
+
+
+
+SELECT *FROM employees
+WHERE YEAR(hire_date) = YEAR(CURDATE()) - 1;
+
+--Output:
++-------------+------------+-----------+---------------+------------+
+| employee_id | first_name | last_name | department_id | hire_date  |
++-------------+------------+-----------+---------------+------------+
+|           2 | Jane       | Smith     |             2 | 2023-06-01 |
+|           5 | Mike       | Davis     |             5 | 2023-02-01 |
++-------------+------------+-----------+---------------+------------+
+
+
+
+[-- Write a query to calculate the total salary expenditure for each department.]
+
+
+SELECT 
+  d.department_name, 
+  SUM(s.salary) AS total_salary
+FROM 
+  departments d
+  JOIN employees e ON d.department_id = e.department_id
+  JOIN salaries s ON e.employee_id = s.employee_id
+GROUP BY 
+  d.department_name;
+
+--Output:
++-----------------+--------------+
+| department_name | total_salary |
++-----------------+--------------+
+| Sales           |     50000.00 |
+| Marketing       |     60000.00 |
+| IT              |     70000.00 |
+| HR              |     40000.00 |
+| Finance         |     80000.00 |
++-----------------+--------------+
+
+
+
+[-- Write a query to find the top 5 highest-paid employees along with their department names.]
+
+
+SELECT 
+  e.first_name, 
+  e.last_name, 
+  s.salary, 
+  d.department_name
+FROM 
+  employees e, 
+  salaries s, 
+  departments d
+WHERE 
+  e.employee_id = s.employee_id 
+  AND e.department_id = d.department_id
+ORDER BY 
+  s.salary DESC
+LIMIT 5;
+
+
+--Output:
++------------+-----------+----------+-----------------+
+| first_name | last_name | salary   | department_name |
++------------+-----------+----------+-----------------+
+| Mike       | Davis     | 80000.00 | Finance         |
+| Bob        | Johnson   | 70000.00 | IT              |
+| Jane       | Smith     | 60000.00 | Marketing       |
+| John       | Doe       | 50000.00 | Sales           |
+| Alice      | Williams  | 40000.00 | HR              |
++------------+-----------+----------+-----------------+
